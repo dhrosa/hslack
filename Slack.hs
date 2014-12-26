@@ -3,8 +3,8 @@
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Reader
 import Control.Monad.State
+import Control.Monad.Trans.Either
 import qualified Data.Map as M
 import Text.Printf
 
@@ -18,6 +18,7 @@ type CommandName = String
 type CommandArgs = M.Map ArgName ArgValue
 
 type URL = String
+type SlackError = String
 
 -- Internal state for slack commands
 data SlackState = SlackState
@@ -27,12 +28,12 @@ data SlackState = SlackState
                   }
                   deriving (Show)
 
-newtype Slack a = Slack {runSlackInternal :: StateT SlackState IO a}
+newtype Slack a = Slack {runSlackInternal :: EitherT SlackError (StateT SlackState IO) a}
                   deriving (Functor, Applicative, Monad, MonadIO, MonadState SlackState)
 
 -- Given an API token and a Slack command, it executes the command in the IO monad
-runSlack :: Token -> Slack a -> IO a
-runSlack token = flip evalStateT (slackAuth token) . runSlackInternal
+runSlack :: Token -> Slack a -> IO (Either SlackError a)
+runSlack token = flip evalStateT (slackAuth token) . runEitherT . runSlackInternal
 
 -- Constructs an initial internal state from the given API token
 slackAuth :: Token -> SlackState
@@ -43,8 +44,8 @@ buildURL :: CommandName -> CommandArgs -> Slack URL
 buildURL command args = do
   tokenArg <- token <$> get
   let queryArgs = M.insert "token" tokenArg args
-      url = printf "https://slack.com/api/%s?%s" command queryString
       queryString :: String
       queryString = M.foldMapWithKey (printf "%s=%s&") queryArgs
+      url = printf "https://slack.com/api/%s?%s" command queryString
   return url
 
