@@ -5,17 +5,22 @@
 
 module Network.Slack where
 
+import           GHC.Generics (Generic)
+
 import           Control.Applicative (Applicative, (<$>))
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.State (MonadState, StateT, evalStateT, get)
 import           Control.Monad.Trans.Either (EitherT, hoistEither, runEitherT)
+
 import           Data.Aeson (FromJSON(..), eitherDecode)
 import           Data.Aeson.Types (genericParseJSON, Options(..), defaultOptions)
+
 import           Data.Char (toLower)
 import           Data.List (stripPrefix)
 import qualified Data.Map as M
-import           GHC.Generics (Generic)
+
 import           Network.HTTP.Conduit (simpleHttp)
+
 import           Text.Printf (printf)
 
 data User = User {
