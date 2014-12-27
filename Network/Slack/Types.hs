@@ -19,6 +19,14 @@ import           Data.Aeson.Types (genericParseJSON, Options(..), defaultOptions
 import           Data.Char (toLower)
 import           Data.List (stripPrefix)
 
+-- Removes a prefix from a string, and lowercases the first letter of the resulting string
+-- This is to turn things like userId into id
+uncamel :: String -> String -> String
+uncamel prefix str = lowercaseFirst . maybe str id . stripPrefix prefix $ str
+  where
+    lowercaseFirst [] = []
+    lowercaseFirst (x:xs) = toLower x : xs
+
 data User = User {
   userId :: UserId,
   userName :: UserName
@@ -26,10 +34,6 @@ data User = User {
 
 instance FromJSON User where
   parseJSON = genericParseJSON (defaultOptions { fieldLabelModifier = uncamel "user" })
-    where
-      uncamel prefix str = lowercaseFirst . maybe str id . stripPrefix prefix $ str
-      lowercaseFirst [] = []
-      lowercaseFirst (x:xs) = toLower x : xs
 
 data UserListResp = UserListResp {
   ok :: Bool,
@@ -43,3 +47,12 @@ type UserId = String
 type UserName = String
 
 type SlackError = String
+
+data Channel = Channel {
+  channelId :: String,
+  channelName :: String,
+  channelMembers :: [User]
+  } deriving (Show, Generic)
+
+instance FromJSON Channel where
+  parseJSON = genericParseJSON (defaultOptions {fieldLabelModifier = uncamel "channel"})
