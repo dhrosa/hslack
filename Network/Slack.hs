@@ -1,59 +1,30 @@
 {-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE DisambiguateRecordFields #-}
 
 module Network.Slack where
 
-import           GHC.Generics (Generic)
+import Network.Slack.Types
 
 import           Control.Applicative (Applicative, (<$>))
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.State (MonadState, StateT, evalStateT, get)
 import           Control.Monad.Trans.Either (EitherT, hoistEither, runEitherT)
 
-import           Data.Aeson (FromJSON(..), eitherDecode)
-import           Data.Aeson.Types (genericParseJSON, Options(..), defaultOptions)
-
-import           Data.Char (toLower)
-import           Data.List (stripPrefix)
-import qualified Data.Map as M
-
 import           Network.HTTP.Conduit (simpleHttp)
 
+import           Data.Aeson (eitherDecode)
+
+import qualified Data.Map as M
+
 import           Text.Printf (printf)
-
-data User = User {
-  userId :: UserId,
-  userName :: UserName
-  } deriving (Show, Generic)
-
-instance FromJSON User where
-  parseJSON = genericParseJSON (defaultOptions { fieldLabelModifier = uncamel "user" })
-    where
-      uncamel prefix str = lowercaseFirst . maybe str id . stripPrefix prefix $ str
-      lowercaseFirst [] = []
-      lowercaseFirst (x:xs) = toLower x : xs
-
-data UserListResp = UserListResp {
-  ok :: Bool,
-  error :: Maybe SlackError,
-  members :: [User]
-  } deriving (Show, Generic)
-
-instance FromJSON UserListResp
-             
-type Token = String
-type UserId = String
-type UserName = String
 
 type ArgName = String
 type ArgValue = String
 type CommandName = String
 type CommandArgs = M.Map ArgName ArgValue
 
+type Token = String
 type URL = String
-type SlackError = String
 
 -- Internal state for slack commands
 data SlackState = SlackState
