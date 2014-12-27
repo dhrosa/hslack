@@ -16,16 +16,17 @@ module Network.Slack.Types
        )
        where
 
-import           GHC.Generics (Generic)
+import Debug.Trace
+import GHC.Generics (Generic)
 
-import           Control.Applicative (Applicative, (<$>), (<*>))
+import Control.Applicative (Applicative, (<$>), (<*>))
 
-import           Data.Aeson (FromJSON(..), (.:), (.:?))
-import           Data.Aeson.Types (Value(..), genericParseJSON, Options(..), defaultOptions)
-import           Data.Text (Text)
+import Data.Aeson (FromJSON(..), (.:), (.:?))
+import Data.Aeson.Types (Value(..), genericParseJSON, Options(..), defaultOptions)
+import Data.Text (Text)
 
-import           Data.Char (toLower)
-import           Data.List (stripPrefix)
+import Data.Char (toLower)
+import Data.List (stripPrefix)
 
 -- Removes a prefix from a string, and lowercases the first letter of the resulting string
 -- This is to turn things like userId into id
@@ -43,11 +44,8 @@ data User = User {
 instance FromJSON User where
   parseJSON = genericParseJSON (defaultOptions { fieldLabelModifier = uncamel "user" })
 
-data SlackResponse a = SlackResponse {
-  ok :: Bool,
-  error :: Maybe String,
-  result :: a
-  } deriving (Show, Generic)
+data SlackResponse a = SlackResponse { response :: Either String a }
+                       deriving (Show)
 
 class SlackResponseName a where
   slackResponseName :: a -> Text
@@ -56,10 +54,15 @@ instance SlackResponseName [User] where
   slackResponseName _ = "members"
 
 instance (FromJSON a, SlackResponseName a) => FromJSON (SlackResponse a) where
-  parseJSON (Object v) = SlackResponse <$>
-                         v .: "ok" <*>
-                         v .:? "error" <*>
-                         v .: slackResponseName (undefined :: a)
+  parseJSON (Object v) = do
+    ok <- v .: "ok"
+    if ok
+      -- If success, get the name of the key to parse, and return the parsed object
+      then SlackResponse . Right <$> v .: slackResponseName (undefined :: a)
+      -- Else get the error message
+      else SlackResponse . Left <$> v .: "error"
+
+  parseJSON _ = trace "HELLO" (return undefined)
 
 type UserId = String
 type UserName = String

@@ -12,7 +12,7 @@ import           Control.Monad.Trans.Either (EitherT, hoistEither, runEitherT)
 
 import           Network.HTTP.Conduit (simpleHttp)
 
-import           Data.Aeson (eitherDecode)
+import           Data.Aeson (FromJSON(..), eitherDecode)
 
 import qualified Data.Map as M
 
@@ -55,14 +55,28 @@ buildURL command args = do
       url = printf "https://slack.com/api/%s?%s" command queryString
   return url
 
+-- Takes a URL and parses the resulting response
+request :: (SlackResponseName a, FromJSON a) => CommandName -> CommandArgs -> Slack a
+request command args = do
+  -- Construct the proper API url
+  url <- buildURL command args
+  -- Retrieve the raw JSON Data
+  raw <- liftIO (simpleHttp url) 
+  -- Parse it into a SlackResponse object
+  resp <- Slack . hoistEither . eitherDecode $ raw
+  -- Merge the Either inside the SlackResponse with the EitherT in the Slack monad stack
+  Slack . hoistEither . response $ resp
+
+-- Same as request with no command arguments
+request' :: (SlackResponseName a, FromJSON a) => CommandName -> Slack a
+request' command = request command M.empty
+
 -- Internal setup. Currently it fetches the list of users so that it can associated user ids with names
 slackInit :: Slack ()
 slackInit = do
-  url <- buildURL "users.list" M.empty
-  raw <- liftIO (simpleHttp url)
-  userListResp <- Slack . hoistEither . eitherDecode $ raw :: Slack (SlackResponse [User])
+  users <- request' "users.list" :: Slack [User]
   let
-    updateUsers state = state {_users = result userListResp}
+    updateUsers state = state {_users = users}
   -- Update internal state
   modify updateUsers
 
