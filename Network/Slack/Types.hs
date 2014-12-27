@@ -10,7 +10,9 @@ module Network.Slack.Types
          SlackError,
          SlackResponse(..),
          SlackResponseName(..),
-         User(..)
+         User(..),
+         ChannelRaw(..),
+         Channel(..)
        )
        where
 
@@ -67,15 +69,24 @@ instance FromJSON User where
 instance SlackResponseName [User] where
   slackResponseName _ = "members"
 
--- Represents a Slack channel
+-- Represents a response from the "channels.list" command. This
+-- contains a list of user IDs instead of user objects. This should be
+-- converted to a Channel object
+data ChannelRaw = ChannelRaw {
+  channelRawId :: String,
+  channelRawName :: String,
+  channelRawMembers :: [String] -- This is a list of user IDs
+  } deriving (Show, Generic)
+
+instance FromJSON ChannelRaw where
+  parseJSON = genericParseJSON (defaultOptions {fieldLabelModifier = uncamel "channelRaw"})
+
+instance SlackResponseName [ChannelRaw] where
+  slackResponseName _ = "channels"
+
+-- A more useable version of ChannelRaw
 data Channel = Channel {
   channelId :: String,
   channelName :: String,
   channelMembers :: [User]
-  } deriving (Show, Generic)
-
-instance FromJSON Channel where
-  parseJSON = genericParseJSON (defaultOptions {fieldLabelModifier = uncamel "channel"})
-
-instance SlackResponseName [Channel] where
-  slackResponseName _ = "channels"
+} deriving (Show)

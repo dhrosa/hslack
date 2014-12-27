@@ -14,6 +14,7 @@ import           Network.HTTP.Conduit (simpleHttp)
 
 import           Data.Aeson (FromJSON(..), eitherDecode)
 
+import           Data.List (find)
 import qualified Data.Map as M
 
 import           Text.Printf (printf)
@@ -88,3 +89,21 @@ slackInit = do
 -- Gets the list of users associated with the Slack team
 users :: Slack [User]
 users = _users <$> get
+
+-- Converts a user ID to a user object, signaling an error if there's no such user ID
+userFromId :: String -> Slack User
+userFromId uid = do
+  maybeUser <- find (\u -> userId u == uid) <$> users :: Slack (Maybe User)
+  case maybeUser of
+   Nothing   -> Slack . hoistEither . Left . printf "Could not find user with id: %s" $ uid
+   Just user -> Slack . hoistEither $ Right user
+
+-- List of all channels associated with the team
+channels :: Slack [Channel]
+channels = mapM convertRawChannel =<< request' "channels.list"
+  where
+    -- Converts a ChannelRaw to a Channel by doing user id lookups
+    convertRawChannel :: ChannelRaw -> Slack Channel
+    convertRawChannel (ChannelRaw cid cname cuids) = do
+      channelUsers <- mapM userFromId cuids
+      return (Channel cid cname channelUsers)
