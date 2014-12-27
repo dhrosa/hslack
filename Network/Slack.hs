@@ -48,14 +48,19 @@ slackAuth tok = SlackState tok []
 -- Constructs an API request URL given the API token, command names, and command args
 buildURL :: CommandName -> CommandArgs -> Slack URL
 buildURL command args = do
+  -- Retrieve the token from the internal state
   tokenArg <- _token <$> get
-  let queryArgs = M.insert "token" tokenArg args
-      queryString :: String
-      queryString = M.foldMapWithKey (printf "%s=%s&") queryArgs
-      url = printf "https://slack.com/api/%s?%s" command queryString
+  let
+    -- Insert the token into the args
+    queryArgs = M.insert "token" tokenArg args
+    -- Build the GET query string
+    queryString :: String
+    queryString = M.foldMapWithKey (printf "%s=%s&") queryArgs
+
+    url = printf "https://slack.com/api/%s?%s" command queryString
   return url
 
--- Takes a URL and parses the resulting response
+-- Takes a API command name and the args and executes the request
 request :: (SlackResponseName a, FromJSON a) => CommandName -> CommandArgs -> Slack a
 request command args = do
   -- Construct the proper API url
@@ -71,7 +76,7 @@ request command args = do
 request' :: (SlackResponseName a, FromJSON a) => CommandName -> Slack a
 request' command = request command M.empty
 
--- Internal setup. Currently it fetches the list of users so that it can associated user ids with names
+-- Internal setup. Currently it just fetches the list of users so that it can associated user ids with names
 slackInit :: Slack ()
 slackInit = do
   users <- request' "users.list" :: Slack [User]

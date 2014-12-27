@@ -7,12 +7,10 @@
 
 module Network.Slack.Types
        (
-         User(..),
          SlackError,
          SlackResponse(..),
          SlackResponseName(..),
-         UserId,
-         UserName
+         User(..)
        )
        where
 
@@ -28,30 +26,17 @@ import Data.Text (Text)
 import Data.Char (toLower)
 import Data.List (stripPrefix)
 
--- Removes a prefix from a string, and lowercases the first letter of the resulting string
--- This is to turn things like userId into id
-uncamel :: String -> String -> String
-uncamel prefix str = lowercaseFirst . maybe str id . stripPrefix prefix $ str
-  where
-    lowercaseFirst [] = []
-    lowercaseFirst (x:xs) = toLower x : xs
+type SlackError = String
 
-data User = User {
-  userId :: UserId,
-  userName :: UserName
-  } deriving (Show, Generic)
-
-instance FromJSON User where
-  parseJSON = genericParseJSON (defaultOptions { fieldLabelModifier = uncamel "user" })
-
-data SlackResponse a = SlackResponse { response :: Either String a }
+-- Represents the response the Slack API returns
+ -- If the Slack API has an "ok" member, the 
+data SlackResponse a = SlackResponse { response :: Either SlackError a }
                        deriving (Show)
 
+-- Maps response types to the name of the key in the Slack API
+-- For example, the "users.list" command returns the list of users in a key labeled "members"
 class SlackResponseName a where
   slackResponseName :: a -> Text
-
-instance SlackResponseName [User] where
-  slackResponseName _ = "members"
 
 instance (FromJSON a, SlackResponseName a) => FromJSON (SlackResponse a) where
   parseJSON (Object v) = do
@@ -62,13 +47,27 @@ instance (FromJSON a, SlackResponseName a) => FromJSON (SlackResponse a) where
       -- Else get the error message
       else SlackResponse . Left <$> v .: "error"
 
-  parseJSON _ = trace "HELLO" (return undefined)
+-- Removes a prefix from a string, and lowercases the first letter of the resulting string
+-- This is to turn things like userId into id
+uncamel :: String -> String -> String
+uncamel prefix str = lowercaseFirst . maybe str id . stripPrefix prefix $ str
+  where
+    lowercaseFirst [] = []
+    lowercaseFirst (x:xs) = toLower x : xs
 
-type UserId = String
-type UserName = String
+-- A Slack User
+data User = User {
+  userId :: String,
+  userName :: String
+  } deriving (Show, Generic)
 
-type SlackError = String
+instance FromJSON User where
+  parseJSON = genericParseJSON (defaultOptions { fieldLabelModifier = uncamel "user" })
 
+instance SlackResponseName [User] where
+  slackResponseName _ = "members"
+
+-- Represents a Slack channel
 data Channel = Channel {
   channelId :: String,
   channelName :: String,
@@ -77,3 +76,6 @@ data Channel = Channel {
 
 instance FromJSON Channel where
   parseJSON = genericParseJSON (defaultOptions {fieldLabelModifier = uncamel "channel"})
+
+instance SlackResponseName [Channel] where
+  slackResponseName _ = "channels"
