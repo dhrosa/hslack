@@ -3,6 +3,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
 
+module Network.Slack where
+
 import           Control.Applicative
 import           Control.Monad
 import           Control.Monad.State
