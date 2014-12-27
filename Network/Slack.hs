@@ -5,18 +5,18 @@
 
 module Network.Slack where
 
-import           Control.Applicative
-import           Control.Monad
-import           Control.Monad.State
-import           Control.Monad.Trans.Either
-import           Data.Aeson
-import           Data.Aeson.Types
-import           Data.List
-import qualified Data.Map as M
-import           GHC.Generics
-import           Text.Printf
-import           Network.HTTP.Conduit
+import           Control.Applicative (Applicative, (<$>))
+import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Control.Monad.State (MonadState, StateT, evalStateT, get)
+import           Control.Monad.Trans.Either (EitherT, hoistEither, runEitherT)
+import           Data.Aeson (FromJSON(..), eitherDecode)
+import           Data.Aeson.Types (genericParseJSON, Options(..), defaultOptions)
 import           Data.Char (toLower)
+import           Data.List (stripPrefix)
+import qualified Data.Map as M
+import           GHC.Generics (Generic)
+import           Network.HTTP.Conduit (simpleHttp)
+import           Text.Printf (printf)
 
 data User = User {
   userId :: UserId,
@@ -63,11 +63,11 @@ newtype Slack a = Slack {runSlackInternal :: EitherT SlackError (StateT SlackSta
 
 -- Given an API token and a Slack command, it executes the command in the IO monad
 runSlack :: Token -> Slack a -> IO (Either SlackError a)
-runSlack token = flip evalStateT (slackAuth token) . runEitherT . runSlackInternal
+runSlack tok = flip evalStateT (slackAuth tok) . runEitherT . runSlackInternal
 
 -- Constructs an initial internal state from the given API token
 slackAuth :: Token -> SlackState
-slackAuth token = SlackState token M.empty
+slackAuth tok = SlackState tok M.empty
 
 -- Constructs an API request URL given the API token, command names, and command args
 buildURL :: CommandName -> CommandArgs -> Slack URL
