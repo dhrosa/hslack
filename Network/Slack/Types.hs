@@ -1,11 +1,16 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Network.Slack.Types
        (
          User(..),
-         UserListResp(..),
          SlackError,
+         SlackResponse(..),
+         SlackResponseName(..),
          UserId,
          UserName
        )
@@ -13,8 +18,11 @@ module Network.Slack.Types
 
 import           GHC.Generics (Generic)
 
-import           Data.Aeson (FromJSON(..))
-import           Data.Aeson.Types (genericParseJSON, Options(..), defaultOptions)
+import           Control.Applicative (Applicative, (<$>), (<*>))
+
+import           Data.Aeson (FromJSON(..), (.:), (.:?))
+import           Data.Aeson.Types (Value(..), genericParseJSON, Options(..), defaultOptions)
+import           Data.Text (Text)
 
 import           Data.Char (toLower)
 import           Data.List (stripPrefix)
@@ -35,13 +43,23 @@ data User = User {
 instance FromJSON User where
   parseJSON = genericParseJSON (defaultOptions { fieldLabelModifier = uncamel "user" })
 
-data UserListResp = UserListResp {
+data SlackResponse a = SlackResponse {
   ok :: Bool,
-  error :: Maybe SlackError,
-  members :: [User]
+  error :: Maybe String,
+  result :: a
   } deriving (Show, Generic)
 
-instance FromJSON UserListResp
+class SlackResponseName a where
+  slackResponseName :: a -> Text
+
+instance SlackResponseName [User] where
+  slackResponseName _ = "members"
+
+instance (FromJSON a, SlackResponseName a) => FromJSON (SlackResponse a) where
+  parseJSON (Object v) = SlackResponse <$>
+                         v .: "ok" <*>
+                         v .:? "error" <*>
+                         v .: slackResponseName (undefined :: a)
 
 type UserId = String
 type UserName = String

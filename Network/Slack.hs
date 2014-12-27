@@ -60,9 +60,9 @@ slackInit :: Slack ()
 slackInit = do
   url <- buildURL "users.list" M.empty
   raw <- liftIO (simpleHttp url)
-  userListResp <- Slack . hoistEither . eitherDecode $ raw
+  userListResp <- Slack . hoistEither . eitherDecode $ raw :: Slack (SlackResponse [User])
   let
-    updateUsers state = state {_users = members userListResp}
+    updateUsers state = state {_users = result userListResp}
   -- Update internal state
   modify updateUsers
 
