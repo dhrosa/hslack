@@ -1,15 +1,43 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DisambiguateRecordFields #-}
 
-import Control.Applicative
-import Control.Monad
-import Control.Monad.State
-import Control.Monad.Trans.Either
+import           Control.Applicative
+import           Control.Monad
+import           Control.Monad.State
+import           Control.Monad.Trans.Either
+import           Data.Aeson
+import           Data.Aeson.Types
+import           Data.List
 import qualified Data.Map as M
-import Text.Printf
+import           GHC.Generics
+import           Text.Printf
+import           Network.HTTP.Conduit
+import           Data.Char (toLower)
 
+data User = User {
+  userId :: UserId,
+  userName :: UserName
+  } deriving (Show, Generic)
+
+instance FromJSON User where
+  parseJSON = genericParseJSON (defaultOptions { fieldLabelModifier = uncamel "user" })
+    where
+      uncamel prefix str = lowercaseFirst . maybe str id . stripPrefix prefix $ str
+      lowercaseFirst [] = []
+      lowercaseFirst (x:xs) = toLower x : xs
+
+data UserListResp = UserListResp {
+  ok :: Bool,
+  error :: Maybe SlackError,
+  members :: [User]
+  } deriving (Show, Generic)
+
+instance FromJSON UserListResp
+             
 type Token = String
-type UserID = String
+type UserId = String
 type UserName = String
 
 type ArgName = String
@@ -24,7 +52,7 @@ type SlackError = String
 data SlackState = SlackState
                   {
                     token :: Token,                  -- Slack API token
-                    userMap :: M.Map UserID UserName -- Maps user IDs to user names
+                    userMap :: M.Map UserId UserName -- Maps user IDs to user names
                   }
                   deriving (Show)
 
@@ -49,3 +77,8 @@ buildURL command args = do
       url = printf "https://slack.com/api/%s?%s" command queryString
   return url
 
+userList :: Slack UserListResp
+userList = do
+  url <- buildURL "users.list" M.empty
+  raw <- liftIO (simpleHttp url)
+  Slack . hoistEither . eitherDecode $ raw
