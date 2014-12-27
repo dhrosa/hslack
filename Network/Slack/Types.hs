@@ -12,7 +12,9 @@ module Network.Slack.Types
          SlackResponseName(..),
          User(..),
          ChannelRaw(..),
-         Channel(..)
+         Channel(..),
+         MessageRaw(..),
+         Message(..)
        )
        where
 
@@ -90,3 +92,23 @@ data Channel = Channel {
   channelName :: String,
   channelMembers :: [User]
 } deriving (Show)
+
+-- A message sent on a channel. Message can also mean things like user joined or a message was edited
+data MessageRaw = MessageRaw {
+  messageRawType :: String,
+  messageRawUser :: String, -- user ID
+  messageRawText :: String
+} deriving (Show, Generic)
+
+instance FromJSON MessageRaw where
+  parseJSON = genericParseJSON (defaultOptions {fieldLabelModifier = uncamel "messageRaw"})
+
+instance SlackResponseName [MessageRaw] where 
+  slackResponseName _ = "messages"
+
+-- A nicer version of MessageRaw, with the user id converted to a User
+data Message = Message {
+  messageType :: String,
+  messageUser :: User,
+  messageText :: String
+  } deriving (Show)

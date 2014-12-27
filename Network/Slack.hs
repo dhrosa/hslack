@@ -107,3 +107,16 @@ channels = mapM convertRawChannel =<< request' "channels.list"
     convertRawChannel (ChannelRaw cid cname cuids) = do
       channelUsers <- mapM userFromId cuids
       return (Channel cid cname channelUsers)
+
+-- List of the past 1000 messages in the given channel
+channelHistory :: Channel -> Slack [Message]
+channelHistory chan = mapM convertRawMessage =<< request "channels.history" args
+  where
+    args = M.fromList [
+      ("channel", channelId chan),
+      ("count", "1000")
+      ]
+    convertRawMessage :: MessageRaw -> Slack Message
+    convertRawMessage (MessageRaw mtype muid mtext) = do
+      user <- userFromId muid
+      return (Message mtype user mtext)
