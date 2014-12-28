@@ -16,7 +16,7 @@ version:             0.1.0.0
 synopsis:            Haskell API for interacting with Slack
 
 -- A longer description of the package.
--- description:         
+description:         Visit https://api.slack.com/web in order to get your API token
 
 -- The license under which the package is released.
 license:             MIT

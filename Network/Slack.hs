@@ -172,9 +172,9 @@ messagesByUser user = filter (byUser . messageUser)
     byUser Nothing = False
     byUser (Just u) = u == user
 
--- brandonHistory :: Slack String
--- brandonHistory = do
---   brandon <- userFromName "brandon"
---   general <- channelFromName "general"
---   messages <- messagesByUser brandon <$> channelHistory general
---   return . unlines . map messageText $ messages
+brandonHistory :: Slack String
+brandonHistory = do
+  brandon <- userFromName "general"
+  general <- channelFromName "general"
+  messages <- messagesByUser brandon <$> channelHistoryAll general
+  return . unlines . map messageText $ messages
