@@ -38,12 +38,11 @@ import Data.List (stripPrefix)
 
 type SlackError = String
 
--- Represents the response the Slack API returns
- -- If the Slack API has an "ok" member, the 
+-- | Represents the response the Slack API returns
 data SlackResponse a = SlackResponse { response :: Either SlackError a }
                        deriving (Show)
 
--- Maps response types to the name of the key in the Slack API
+-- | Maps response types to the name of the key in the Slack API
 -- For example, the "users.list" command returns the list of users in a key labeled "members"
 class SlackResponseName a where
   slackResponseName :: a -> Text
@@ -57,7 +56,7 @@ instance (FromJSON a, SlackResponseName a) => FromJSON (SlackResponse a) where
       -- Else get the error message
       else SlackResponse . Left <$> v .: "error"
 
--- Removes a prefix from a string, and lowercases the first letter of the resulting string
+-- | Removes a prefix from a string, and lowercases the first letter of the resulting string
 -- This is to turn things like userId into id
 uncamel :: String -> String -> String
 uncamel prefix str = lowercaseFirst . maybe str id . stripPrefix prefix $ str
@@ -65,7 +64,7 @@ uncamel prefix str = lowercaseFirst . maybe str id . stripPrefix prefix $ str
     lowercaseFirst [] = []
     lowercaseFirst (x:xs) = toLower x : xs
 
--- A Slack User
+-- | A Slack User
 data User = User {
   userId :: String,
   userName :: String
@@ -77,7 +76,7 @@ instance FromJSON User where
 instance SlackResponseName [User] where
   slackResponseName _ = "members"
 
--- Represents a response from the "channels.list" command. This
+-- | Represents a response from the "channels.list" command. This
 -- contains a list of user IDs instead of user objects. This should be
 -- converted to a Channel object
 data ChannelRaw = ChannelRaw {
@@ -92,18 +91,19 @@ instance FromJSON ChannelRaw where
 instance SlackResponseName [ChannelRaw] where
   slackResponseName _ = "channels"
 
--- A more useable version of ChannelRaw
+-- | A more useable version of ChannelRaw
 data Channel = Channel {
   channelId :: String,
   channelName :: String,
   channelMembers :: [User]
 } deriving (Show)
 
--- Fixed point number with 12 decimal places of precision
+-- | Fixed point number with 12 decimal places of precision
 newtype TimeStamp = TimeStamp {
   utcTime :: UTCTime
   } deriving (Show, Eq, Ord)
 
+-- | Converts a TimeStamp to the timestamp format the Slack API expects
 timeStampToString :: TimeStamp -> String
 timeStampToString = formatTime defaultTimeLocale "%s%Q" . utcTime
 
@@ -114,7 +114,8 @@ instance FromJSON TimeStamp where
      Nothing     -> fail "Incorrect timestamp format."
      Just (time) -> return (TimeStamp time)
 
--- A message sent on a channel. Message can also mean things like user joined or a message was edited
+-- | A message sent on a channel. Message can also mean things like user joined or a message was edited
+-- TODO: Make this into a sum type of different message types, instead of using Maybe
 data MessageRaw = MessageRaw {
   messageRawType :: String,
   messageRawUser :: Maybe String, -- user ID
@@ -128,7 +129,7 @@ instance FromJSON MessageRaw where
 instance SlackResponseName [MessageRaw] where 
   slackResponseName _ = "messages"
 
--- A nicer version of MessageRaw, with the user id converted to a User
+-- | A nicer version of MessageRaw, with the user id converted to a User
 data Message = Message {
   messageType :: String,
   messageUser :: Maybe User,
