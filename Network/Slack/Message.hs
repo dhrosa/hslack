@@ -1,8 +1,14 @@
 module Network.Slack.Message
        (
          Message(..),
+         MessageRaw(..),
+         convertRawMessage,
          TimeStamp(..),
-         timeStampToString
+         timeStampToString,
+         channelHistory,
+         channelHistoryBefore,
+         channelHistoryAll,
+         messagesByUser
        )
        where
 
