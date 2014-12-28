@@ -23,15 +23,13 @@ module Network.Slack.Types
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTime, formatTime)
 import System.Locale (defaultTimeLocale)
-import Debug.Trace
 import GHC.Generics (Generic)
 
-import Control.Applicative (Applicative, (<$>), (<*>))
+import Control.Applicative ((<$>))
 
-import Data.Aeson (FromJSON(..), (.:), (.:?))
+import Data.Aeson (FromJSON(..), (.:))
 import Data.Aeson.Types (Value(..), genericParseJSON, Options(..), defaultOptions)
 import Data.Text (Text, unpack)
-import Data.Fixed (Pico)
 
 import Data.Char (toLower)
 import Data.List (stripPrefix)
@@ -55,6 +53,8 @@ instance (FromJSON a, SlackResponseName a) => FromJSON (SlackResponse a) where
       then SlackResponse . Right <$> v .: slackResponseName (undefined :: a)
       -- Else get the error message
       else SlackResponse . Left <$> v .: "error"
+
+  parseJSON _ = fail "Expected an Object."
 
 -- | Removes a prefix from a string, and lowercases the first letter of the resulting string
 -- This is to turn things like userId into id
@@ -113,6 +113,8 @@ instance FromJSON TimeStamp where
     case maybeTime of
      Nothing     -> fail "Incorrect timestamp format."
      Just (time) -> return (TimeStamp time)
+
+  parseJSON _ = fail "Expected a timestamp string"
 
 -- | A message sent on a channel. Message can also mean things like user joined or a message was edited
 -- TODO: Make this into a sum type of different message types, instead of using Maybe

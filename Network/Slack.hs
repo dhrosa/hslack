@@ -83,9 +83,9 @@ request' command = request command M.empty
 -- |Internal setup. Currently it just fetches the list of users so that it can associated user ids with names
 slackInit :: Slack ()
 slackInit = do
-  users <- request' "users.list" :: Slack [User]
+  currentUsers <- request' "users.list" :: Slack [User]
   let
-    updateUsers state = state {_users = users}
+    updateUsers state = state {_users = currentUsers}
   -- Update internal state
   modify updateUsers
 
