@@ -18,6 +18,9 @@ module Network.Slack.Types
        )
        where
 
+import Data.Time.Clock (UTCTime)
+import Data.Time.Format (parseTime)
+import System.Locale (defaultTimeLocale)
 import Debug.Trace
 import GHC.Generics (Generic)
 
@@ -25,7 +28,8 @@ import Control.Applicative (Applicative, (<$>), (<*>))
 
 import Data.Aeson (FromJSON(..), (.:), (.:?))
 import Data.Aeson.Types (Value(..), genericParseJSON, Options(..), defaultOptions)
-import Data.Text (Text)
+import Data.Text (Text, unpack)
+import Data.Fixed (Pico)
 
 import Data.Char (toLower)
 import Data.List (stripPrefix)
@@ -63,7 +67,7 @@ uncamel prefix str = lowercaseFirst . maybe str id . stripPrefix prefix $ str
 data User = User {
   userId :: String,
   userName :: String
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance FromJSON User where
   parseJSON = genericParseJSON (defaultOptions { fieldLabelModifier = uncamel "user" })
@@ -93,11 +97,24 @@ data Channel = Channel {
   channelMembers :: [User]
 } deriving (Show)
 
+-- Fixed point number with 12 decimal places of precision
+newtype TimeStamp = TimeStamp {
+  utcTime :: UTCTime
+  } deriving (Show, Eq, Ord)
+
+instance FromJSON TimeStamp where
+  parseJSON (String s) = do
+    let maybeTime = parseTime defaultTimeLocale "%s%Q" (unpack s):: Maybe UTCTime
+    case maybeTime of
+     Nothing     -> fail "Incorrect timestamp format."
+     Just (time) -> return (TimeStamp time)
+
 -- A message sent on a channel. Message can also mean things like user joined or a message was edited
 data MessageRaw = MessageRaw {
   messageRawType :: String,
   messageRawUser :: String, -- user ID
-  messageRawText :: String
+  messageRawText :: String,
+  messageRawTs :: TimeStamp
 } deriving (Show, Generic)
 
 instance FromJSON MessageRaw where
@@ -110,5 +127,6 @@ instance SlackResponseName [MessageRaw] where
 data Message = Message {
   messageType :: String,
   messageUser :: User,
-  messageText :: String
-  } deriving (Show)
+  messageText :: String,
+  messageTimeStamp :: TimeStamp
+  } deriving (Show, Eq) 

@@ -98,6 +98,14 @@ userFromId uid = do
    Nothing   -> Slack . hoistEither . Left . printf "Could not find user with id: %s" $ uid
    Just user -> Slack . hoistEither $ Right user
 
+-- Converts a user name to a user object, signaling an error if there's no such user name
+userFromName :: String -> Slack User
+userFromName uname = do
+  maybeUser <- find (\u -> userName u == uname) <$> users :: Slack (Maybe User)
+  case maybeUser of
+   Nothing   -> Slack . hoistEither . Left . printf "Could not find user with name: %s" $ uname
+   Just user -> Slack . hoistEither $ Right user
+
 -- List of all channels associated with the team
 channels :: Slack [Channel]
 channels = mapM convertRawChannel =<< request' "channels.list"
@@ -108,6 +116,13 @@ channels = mapM convertRawChannel =<< request' "channels.list"
       channelUsers <- mapM userFromId cuids
       return (Channel cid cname channelUsers)
 
+channelFromName :: String -> Slack Channel
+channelFromName cname = do
+  maybeChannel <- find (\c -> channelName c == cname) <$> channels
+  case maybeChannel of
+   Nothing   -> Slack . hoistEither . Left . printf "Could not find channel with name: %s" $ cname
+   Just channel -> Slack . hoistEither $ Right channel
+   
 -- List of the past 1000 messages in the given channel
 channelHistory :: Channel -> Slack [Message]
 channelHistory chan = mapM convertRawMessage =<< request "channels.history" args
@@ -117,6 +132,17 @@ channelHistory chan = mapM convertRawMessage =<< request "channels.history" args
       ("count", "1000")
       ]
     convertRawMessage :: MessageRaw -> Slack Message
-    convertRawMessage (MessageRaw mtype muid mtext) = do
+    convertRawMessage (MessageRaw mtype muid mtext mts) = do
       user <- userFromId muid
-      return (Message mtype user mtext)
+      return (Message mtype user mtext mts)
+
+-- Retrieves the messages by the given user
+messagesByUser :: User -> [Message] -> [Message]
+messagesByUser user = filter (\m -> messageUser m == user)
+
+brandonHistory :: Slack String
+brandonHistory = do
+  brandon <- userFromName "brandon"
+  general <- channelFromName "general"
+  messages <- messagesByUser brandon <$> channelHistory general
+  return . unlines . map messageText $ messages
