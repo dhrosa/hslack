@@ -6,7 +6,9 @@ module Network.Slack.Message
        )
        where
 
-import Network.Slack.Types (Generic, FromJSON(..), SlackResponseName(..), parseResponse, Slack(..), request)
+import Network.Slack.Prelude
+
+import Network.Slack.Types (SlackResponseName(..), parseResponse, Slack(..), request)
 
 import Network.Slack.User (User(..), userFromId, userFromName)
 import Network.Slack.Channel (Channel(..), channelFromName)
@@ -15,14 +17,8 @@ import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTime, formatTime)
 import System.Locale (defaultTimeLocale)
 
-import Data.Text (unpack)
-
-import Data.Aeson(Value(..))
-
 import qualified Data.Traversable as T
 import qualified Data.Map as M
-
-import Control.Applicative ((<$>))
 
 -- | Fixed point number with 12 decimal places of precision
 newtype TimeStamp = TimeStamp {

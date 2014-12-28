@@ -3,8 +3,6 @@ module Network.Slack.Types
          SlackError,
          parseResponse,
          Token,
-         FromJSON(..),
-         Generic,
          Slack(..),
          SlackState(..),
          SlackResponse(..),
@@ -20,24 +18,21 @@ module Network.Slack.Types
        )
        where
 
-import GHC.Generics (Generic)
+import Network.Slack.Prelude
 
 import Data.Char (toLower)
 import Data.List (stripPrefix)
 import qualified Data.Map as M
 
-import Data.Text (Text)
-import Text.Printf (printf)
-
-import Data.Aeson (FromJSON(..), genericParseJSON,  Value(..), (.:), eitherDecode)
+import Data.Aeson (genericParseJSON)
 import Data.Aeson.Types(Options(..), defaultOptions)
 
 import           Network.HTTP.Conduit (simpleHttp)
 
-import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Control.Monad.State (MonadState, StateT, get)
-import           Control.Monad.Trans.Either (EitherT, hoistEither)
-import Control.Applicative(Applicative(..), (<$>))
+import           Control.Monad.IO.Class (MonadIO)
+import           Control.Monad.State (MonadState, StateT)
+import           Control.Monad.Trans.Either (EitherT)
+import Control.Applicative(Applicative(..))
 
 type SlackError = String
 

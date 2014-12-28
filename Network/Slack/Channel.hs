@@ -6,16 +6,13 @@ module Network.Slack.Channel
        )
        where
 
-import Network.Slack.Types (FromJSON(..), Generic, SlackResponseName(..), parseResponse, Slack(..), request')
+import Network.Slack.Prelude
+
+import Network.Slack.Types (SlackResponseName(..), parseResponse, Slack(..), request')
 
 import Network.Slack.User (User(..), userFromId)
 
 import Data.List (find)
-
-import Control.Applicative ((<$>))
-import Control.Monad.Trans.Either (hoistEither)
-
-import Text.Printf (printf)
 
 -- | Represents a response from the "channels.list" command. This
 -- contains a list of user IDs instead of user objects. This should be
