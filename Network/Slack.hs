@@ -116,6 +116,11 @@ channels = mapM convertRawChannel =<< request' "channels.list"
       channelUsers <- mapM userFromId cuids
       return (Channel cid cname channelUsers)
 
+convertRawMessage :: MessageRaw -> Slack Message
+convertRawMessage (MessageRaw mtype muid mtext mts) = do
+  user <- userFromId muid
+  return (Message mtype user mtext mts)
+
 channelFromName :: String -> Slack Channel
 channelFromName cname = do
   maybeChannel <- find (\c -> channelName c == cname) <$> channels
@@ -131,18 +136,38 @@ channelHistory chan = mapM convertRawMessage =<< request "channels.history" args
       ("channel", channelId chan),
       ("count", "1000")
       ]
-    convertRawMessage :: MessageRaw -> Slack Message
-    convertRawMessage (MessageRaw mtype muid mtext mts) = do
-      user <- userFromId muid
-      return (Message mtype user mtext mts)
 
+-- Gets the 1000 messages occuring before the given time
+channelHistoryBefore :: TimeStamp -> Channel -> Slack [Message]
+channelHistoryBefore ts chan = mapM convertRawMessage =<< request "channels.history" args
+  where
+    args = M.fromList [
+      ("channel", channelId chan),
+      ("count", "1000"),
+      ("latest", timeStampToString ts)
+      ]
+
+channelHistoryAll :: Channel -> Slack [Message]
+channelHistoryAll chan = do
+  latest <- channelHistory chan
+  let
+    older = go . messageTimeStamp . last $ latest
+    -- Recursively fetch older and older messages, until Slack returns an empty list
+    go :: TimeStamp -> Slack [Message]
+    go ts = do
+      messages <- channelHistoryBefore ts chan
+      case messages of
+       [] -> return messages
+       _  -> return messages --(messages ++) <$> (go . messageTimeStamp . last $ messages)
+  (latest ++) <$> older
+           
 -- Retrieves the messages by the given user
 messagesByUser :: User -> [Message] -> [Message]
 messagesByUser user = filter (\m -> messageUser m == user)
 
-brandonHistory :: Slack String
-brandonHistory = do
-  brandon <- userFromName "brandon"
-  general <- channelFromName "general"
-  messages <- messagesByUser brandon <$> channelHistory general
-  return . unlines . map messageText $ messages
+-- brandonHistory :: Slack String
+-- brandonHistory = do
+--   brandon <- userFromName "brandon"
+--   general <- channelFromName "general"
+--   messages <- messagesByUser brandon <$> channelHistory general
+--   return . unlines . map messageText $ messages

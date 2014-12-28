@@ -13,13 +13,15 @@ module Network.Slack.Types
          User(..),
          ChannelRaw(..),
          Channel(..),
+         TimeStamp(..),
+         timeStampToString,
          MessageRaw(..),
          Message(..)
        )
        where
 
 import Data.Time.Clock (UTCTime)
-import Data.Time.Format (parseTime)
+import Data.Time.Format (parseTime, formatTime)
 import System.Locale (defaultTimeLocale)
 import Debug.Trace
 import GHC.Generics (Generic)
@@ -101,6 +103,9 @@ data Channel = Channel {
 newtype TimeStamp = TimeStamp {
   utcTime :: UTCTime
   } deriving (Show, Eq, Ord)
+
+timeStampToString :: TimeStamp -> String
+timeStampToString = formatTime defaultTimeLocale "%s%Q" . utcTime
 
 instance FromJSON TimeStamp where
   parseJSON (String s) = do
