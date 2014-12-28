@@ -8,7 +8,7 @@ module Network.Slack.Message
 
 import Network.Slack.Prelude
 
-import Network.Slack.Types (SlackResponseName(..), parseResponse, Slack(..), request)
+import Network.Slack.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request)
 
 import Network.Slack.User (User(..), userFromId, userFromName)
 import Network.Slack.Channel (Channel(..), channelFromName)
@@ -41,14 +41,14 @@ instance FromJSON TimeStamp where
 -- | A message sent on a channel. Message can also mean things like user joined or a message was edited
 -- TODO: Make this into a sum type of different message types, instead of using Maybe
 data MessageRaw = MessageRaw {
-  messageRawType :: String,
-  messageRawUser :: Maybe String, -- user ID
-  messageRawText :: String,
-  messageRawTs :: TimeStamp
+  _messageType :: String,
+  _messageUser :: Maybe String, -- user ID
+  _messageText :: String,
+  _messageTs :: TimeStamp
 } deriving (Show, Generic)
 
 instance FromJSON MessageRaw where
-  parseJSON = parseResponse "messageRaw"
+  parseJSON = parseStrippedPrefix "_message"
 
 instance SlackResponseName [MessageRaw] where 
   slackResponseName _ = "messages"

@@ -1,7 +1,7 @@
 module Network.Slack.Types
        (
          SlackError,
-         parseResponse,
+         parseStrippedPrefix,
          Token,
          Slack(..),
          SlackState(..),
@@ -46,7 +46,7 @@ data User = User {
   } deriving (Show, Eq, Generic)
 
 instance FromJSON User where
-  parseJSON = parseResponse "user"
+  parseJSON = parseStrippedPrefix "user"
 
 instance SlackResponseName [User] where
   slackResponseName _ = "members"
@@ -67,8 +67,8 @@ data SlackState = SlackState
 newtype Slack a = Slack {runSlackInternal :: EitherT SlackError (StateT SlackState IO) a}
                   deriving (Functor, Applicative, Monad, MonadIO, MonadState SlackState)
 
-
-parseResponse prefix = genericParseJSON (defaultOptions {fieldLabelModifier = uncamel})
+-- |Parses a record from a JSON object by stripping the given prefix off of each field
+parseStrippedPrefix prefix = genericParseJSON (defaultOptions {fieldLabelModifier = uncamel})
   where
     --  Removes a prefix from a string, and lowercases the first letter of the resulting string
     -- This is to turn things like userId into id

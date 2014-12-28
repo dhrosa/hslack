@@ -8,7 +8,7 @@ module Network.Slack.Channel
 
 import Network.Slack.Prelude
 
-import Network.Slack.Types (SlackResponseName(..), parseResponse, Slack(..), request')
+import Network.Slack.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request')
 
 import Network.Slack.User (User(..), userFromId)
 
@@ -18,13 +18,13 @@ import Data.List (find)
 -- contains a list of user IDs instead of user objects. This should be
 -- converted to a Channel object
 data ChannelRaw = ChannelRaw {
-  channelRawId :: String,
-  channelRawName :: String,
-  channelRawMembers :: [String] -- This is a list of user IDs
+  _channelId :: String,
+  _channelName :: String,
+  _channelMembers :: [String] -- This is a list of user IDs
   } deriving (Show, Generic)
 
 instance FromJSON ChannelRaw where
-  parseJSON = parseResponse "channelRaw"
+  parseJSON = parseStrippedPrefix "_channel"
 
 instance SlackResponseName [ChannelRaw] where
   slackResponseName _ = "channels"
