@@ -117,7 +117,7 @@ instance FromJSON TimeStamp where
 -- A message sent on a channel. Message can also mean things like user joined or a message was edited
 data MessageRaw = MessageRaw {
   messageRawType :: String,
-  messageRawUser :: String, -- user ID
+  messageRawUser :: Maybe String, -- user ID
   messageRawText :: String,
   messageRawTs :: TimeStamp
 } deriving (Show, Generic)
@@ -131,7 +131,7 @@ instance SlackResponseName [MessageRaw] where
 -- A nicer version of MessageRaw, with the user id converted to a User
 data Message = Message {
   messageType :: String,
-  messageUser :: User,
+  messageUser :: Maybe User,
   messageText :: String,
   messageTimeStamp :: TimeStamp
   } deriving (Show, Eq) 

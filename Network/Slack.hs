@@ -16,6 +16,7 @@ import           Data.Aeson (FromJSON(..), eitherDecode)
 
 import           Data.List (find)
 import qualified Data.Map as M
+import qualified Data.Traversable as T
 
 import           Text.Printf (printf)
 
@@ -30,8 +31,8 @@ type URL = String
 -- Internal state for slack commands
 data SlackState = SlackState
                   {
-                    _token :: Token, -- Slack API token
-                    _users :: [User] -- The users in this team
+                    _token :: Token,  -- Slack API token
+                    _users :: [User]  -- The users in this team
                   }
                   deriving (Show)
 
@@ -118,7 +119,7 @@ channels = mapM convertRawChannel =<< request' "channels.list"
 
 convertRawMessage :: MessageRaw -> Slack Message
 convertRawMessage (MessageRaw mtype muid mtext mts) = do
-  user <- userFromId muid
+  user <- T.sequence (userFromId <$> muid)
   return (Message mtype user mtext mts)
 
 channelFromName :: String -> Slack Channel
@@ -146,7 +147,7 @@ channelHistoryBefore ts chan = mapM convertRawMessage =<< request "channels.hist
       ("count", "1000"),
       ("latest", timeStampToString ts)
       ]
-
+-- Retrieves the entire channel history
 channelHistoryAll :: Channel -> Slack [Message]
 channelHistoryAll chan = do
   latest <- channelHistory chan
@@ -157,13 +158,19 @@ channelHistoryAll chan = do
     go ts = do
       messages <- channelHistoryBefore ts chan
       case messages of
-       [] -> return messages
-       _  -> return messages --(messages ++) <$> (go . messageTimeStamp . last $ messages)
+       -- No more messages!
+       [] -> return []
+       -- Return the retreived messages ++ the messages older than the oldest retrieved message
+       _  -> (messages ++) <$> (go . messageTimeStamp . last $ messages)
   (latest ++) <$> older
            
 -- Retrieves the messages by the given user
 messagesByUser :: User -> [Message] -> [Message]
-messagesByUser user = filter (\m -> messageUser m == user)
+messagesByUser user = filter (byUser . messageUser)
+  where
+    -- Messages with no users are excluded
+    byUser Nothing = False
+    byUser (Just u) = u == user
 
 -- brandonHistory :: Slack String
 -- brandonHistory = do
