@@ -48,13 +48,13 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Network.Slack, Network.Slack.Types, Network.Slack.Monad, Network.Slack.User, Network.Slack.Channel, Network.Slack.Message
+  exposed-modules:     Network.Slack, Network.Slack.User, Network.Slack.Channel, Network.Slack.Message
   
   -- Modules included in this library but not exported.
   -- other-modules:       
   
   -- LANGUAGE extensions used by modules in this package.
-  default-extensions:    DeriveFunctor, DeriveGeneric, GeneralizedNewtypeDeriving, DisambiguateRecordFields, FlexibleInstances, OverloadedStrings
+  default-extensions:    DeriveFunctor, DeriveGeneric, GeneralizedNewtypeDeriving, DisambiguateRecordFields, FlexibleInstances, OverloadedStrings, ScopedTypeVariables
   
   -- Other library packages from which modules are imported.
   build-depends:       aeson >=0.8 && <0.9
