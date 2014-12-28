@@ -1,18 +1,18 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
 module Network.Slack where
 
+import Network.Slack.Monad
 import Network.Slack.Types
+import Network.Slack.Channel (Channel(..), ChannelRaw(..))
+import Network.Slack.Message (MessageRaw(..), Message(..), TimeStamp(..), timeStampToString)
 
-import           Control.Applicative (Applicative, (<$>))
-import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Control.Monad.State (MonadState, StateT, evalStateT, get, modify)
-import           Control.Monad.Trans.Either (EitherT, hoistEither, runEitherT)
+import           Control.Applicative ((<$>))
+import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.State (evalStateT, get, modify)
+import           Control.Monad.Trans.Either (hoistEither, runEitherT)
 
 import           Network.HTTP.Conduit (simpleHttp)
 
-import           Data.Aeson (FromJSON(..), eitherDecode)
+import           Data.Aeson (eitherDecode)
 
 import           Data.List (find)
 import qualified Data.Map as M
@@ -20,26 +20,6 @@ import qualified Data.Traversable as T
 
 import           Text.Printf (printf)
 
-type ArgName = String
-type ArgValue = String
-type CommandName = String
-type CommandArgs = M.Map ArgName ArgValue
-
--- |A Slack Web API token
-type Token = String
-type URL = String
-
--- |Internal state for slack commands
-data SlackState = SlackState
-                  {
-                    _token :: Token,  -- ^ Slack API token
-                    _users :: [User]  -- ^ The users in this team. This is maintained as state to be able to reference user IDs to users
-                  }
-                  deriving (Show)
-
--- |The Slack monad. It executes commands with the context of possible failure (malformed requests, Slack is down, etc...), and some internal state
-newtype Slack a = Slack {runSlackInternal :: EitherT SlackError (StateT SlackState IO) a}
-                  deriving (Functor, Applicative, Monad, MonadIO, MonadState SlackState)
 
 -- |Given an API token and a Slack command, it executes the command in the IO monad
 runSlack :: Token -> Slack a -> IO (Either SlackError a)
