@@ -51,7 +51,7 @@ library
   exposed-modules:     Network.Slack, Network.Slack.User, Network.Slack.Channel, Network.Slack.Message
   
   -- Modules included in this library but not exported.
-  -- other-modules:       
+  other-modules:   Network.Slack.Types, Network.Slack.Prelude
   
   -- LANGUAGE extensions used by modules in this package.
   default-extensions:    DeriveFunctor, DeriveGeneric, GeneralizedNewtypeDeriving, DisambiguateRecordFields, FlexibleInstances, OverloadedStrings, ScopedTypeVariables

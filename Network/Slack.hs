@@ -1,11 +1,17 @@
 module Network.Slack
        (
          Slack(..),
-         runSlack
+         runSlack,
+         module Network.Slack.User,
+         module Network.Slack.Channel,
+         module Network.Slack.Message
        )
        where
 
 import Network.Slack.Types
+import Network.Slack.User
+import Network.Slack.Channel
+import Network.Slack.Message
 
 import           Control.Monad.State (evalStateT, modify)
 import           Control.Monad.Trans.Either (runEitherT)

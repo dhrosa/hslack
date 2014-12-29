@@ -18,8 +18,8 @@ import Network.Slack.Prelude
 
 import Network.Slack.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request)
 
-import Network.Slack.User (User(..), userFromId, userFromName)
-import Network.Slack.Channel (Channel(..), channelFromName)
+import Network.Slack.User (User(..), userFromId)
+import Network.Slack.Channel (Channel(..))
 
 import Data.Time.Clock (UTCTime, getCurrentTime, addUTCTime)
 import Data.Time.Format (parseTime, formatTime)
