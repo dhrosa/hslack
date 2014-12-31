@@ -1,4 +1,4 @@
-module Network.Slack.Message
+module Web.Slack.Message
        (
          Message(..),
          MessageRaw(..),
@@ -14,12 +14,12 @@ module Network.Slack.Message
        )
        where
 
-import           Network.Slack.Prelude
+import           Web.Slack.Prelude
 
-import           Network.Slack.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request)
+import           Web.Slack.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request)
 
-import           Network.Slack.Channel (Channel(..))
-import           Network.Slack.User (User(..), userFromId)
+import           Web.Slack.Channel (Channel(..))
+import           Web.Slack.User (User(..), userFromId)
 
 import           Data.Time.Clock (UTCTime, getCurrentTime, addUTCTime)
 import           Data.Time.Format (parseTime, formatTime)

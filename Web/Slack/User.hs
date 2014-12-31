@@ -1,4 +1,4 @@
-module Network.Slack.User
+module Web.Slack.User
        (
          User(..),
          users,
@@ -7,7 +7,7 @@ module Network.Slack.User
        )
        where
 
-import Network.Slack.Types (User(..), Slack(..), users)
+import Web.Slack.Types (User(..), Slack(..), users)
 
 import Data.List (find)
 import Text.Printf (printf)

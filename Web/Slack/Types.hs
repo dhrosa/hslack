@@ -1,4 +1,4 @@
-module Network.Slack.Types
+module Web.Slack.Types
        (
          SlackError,
          parseStrippedPrefix,
@@ -18,7 +18,7 @@ module Network.Slack.Types
        )
        where
 
-import           Network.Slack.Prelude
+import           Web.Slack.Prelude
 
 import           Data.Char (toLower)
 import           Data.List (stripPrefix)

@@ -1,4 +1,4 @@
-module Network.Slack.Channel
+module Web.Slack.Channel
        (
         Channel(..),
         channels,
@@ -6,11 +6,11 @@ module Network.Slack.Channel
        )
        where
 
-import Network.Slack.Prelude
+import Web.Slack.Prelude
 
-import Network.Slack.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request')
+import Web.Slack.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request')
 
-import Network.Slack.User (User(..), userFromId)
+import Web.Slack.User (User(..), userFromId)
 
 import Data.List (find)
 

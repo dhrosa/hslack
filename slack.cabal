@@ -10,7 +10,7 @@ name:                slack
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.1.0.0
+version:             0.2.0.0
 
 -- A short (one-line) description of the package.
 synopsis:            Haskell API for interacting with Slack
@@ -34,7 +34,7 @@ maintainer:          dhrosa@gmail.com
 -- A copyright notice.
 -- copyright:           
 
-category:            Network
+category:            Web
 
 build-type:          Simple
 
@@ -48,10 +48,10 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Network.Slack, Network.Slack.User, Network.Slack.Channel, Network.Slack.Message
+  exposed-modules:     Web.Slack, Web.Slack.User, Web.Slack.Channel, Web.Slack.Message
   
   -- Modules included in this library but not exported.
-  other-modules:   Network.Slack.Types, Network.Slack.Prelude
+  other-modules:   Web.Slack.Types, Web.Slack.Prelude
   
   -- LANGUAGE extensions used by modules in this package.
   default-extensions:    DeriveFunctor, DeriveGeneric, GeneralizedNewtypeDeriving, DisambiguateRecordFields, FlexibleInstances, OverloadedStrings, ScopedTypeVariables
