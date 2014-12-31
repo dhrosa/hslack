@@ -18,21 +18,21 @@ module Network.Slack.Types
        )
        where
 
-import Network.Slack.Prelude
+import           Network.Slack.Prelude
 
-import Data.Char (toLower)
-import Data.List (stripPrefix)
+import           Data.Char (toLower)
+import           Data.List (stripPrefix)
 import qualified Data.Map as M
 
-import Data.Aeson (genericParseJSON)
-import Data.Aeson.Types(Options(..), defaultOptions)
+import           Data.Aeson (genericParseJSON)
+import           Data.Aeson.Types (Options(..), defaultOptions)
 
 import           Network.HTTP.Conduit (simpleHttp)
 
+import           Control.Applicative (Applicative(..))
 import           Control.Monad.IO.Class (MonadIO)
 import           Control.Monad.State (MonadState, StateT)
 import           Control.Monad.Trans.Either (EitherT)
-import Control.Applicative(Applicative(..))
 
 type SlackError = String
 

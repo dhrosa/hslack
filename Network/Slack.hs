@@ -8,13 +8,13 @@ module Network.Slack
        )
        where
 
-import Network.Slack.Types
-import Network.Slack.User
 import Network.Slack.Channel
 import Network.Slack.Message
+import Network.Slack.Types
+import Network.Slack.User
 
-import           Control.Monad.State (evalStateT, modify)
-import           Control.Monad.Trans.Either (runEitherT)
+import Control.Monad.State (evalStateT, modify)
+import Control.Monad.Trans.Either (runEitherT)
 
 -- |Given an API token and a Slack command, it executes the command in the IO monad
 runSlack :: Token -> Slack a -> IO (Either SlackError a)

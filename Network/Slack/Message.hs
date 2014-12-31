@@ -14,19 +14,19 @@ module Network.Slack.Message
        )
        where
 
-import Network.Slack.Prelude
+import           Network.Slack.Prelude
 
-import Network.Slack.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request)
+import           Network.Slack.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request)
 
-import Network.Slack.User (User(..), userFromId)
-import Network.Slack.Channel (Channel(..))
+import           Network.Slack.Channel (Channel(..))
+import           Network.Slack.User (User(..), userFromId)
 
-import Data.Time.Clock (UTCTime, getCurrentTime, addUTCTime)
-import Data.Time.Format (parseTime, formatTime)
-import System.Locale (defaultTimeLocale)
+import           Data.Time.Clock (UTCTime, getCurrentTime, addUTCTime)
+import           Data.Time.Format (parseTime, formatTime)
+import           System.Locale (defaultTimeLocale)
 
-import qualified Data.Traversable as T
 import qualified Data.Map as M
+import qualified Data.Traversable as T
 
 -- | Fixed point number with 12 decimal places of precision
 newtype TimeStamp = TimeStamp {
