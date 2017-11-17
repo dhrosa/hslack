@@ -57,12 +57,12 @@ library
   default-extensions:    DeriveFunctor, DeriveGeneric, GeneralizedNewtypeDeriving, DisambiguateRecordFields, FlexibleInstances, OverloadedStrings, ScopedTypeVariables
   
   -- Other library packages from which modules are imported.
-  build-depends:       aeson >=0.8 && <0.9
-                     , base >=4.7 && <4.8
-                     , containers >=0.5 && <0.6
-                     , either >=4.3 && <4.4
-                     , http-conduit >=2.1 && <2.2
-                     , mtl >=2.2 && <2.3
+  build-depends:       aeson
+                     , base
+                     , containers
+                     , either
+                     , http-conduit
+                     , mtl
                      , old-locale
                      , text
                      , time
