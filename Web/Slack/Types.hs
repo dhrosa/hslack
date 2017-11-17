@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Web.Slack.Types
        (
          SlackError,

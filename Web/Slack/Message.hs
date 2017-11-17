@@ -22,8 +22,7 @@ import           Web.Slack.Channel (Channel(..))
 import           Web.Slack.User (User(..), userFromId)
 
 import           Data.Time.Clock (UTCTime, getCurrentTime, addUTCTime)
-import           Data.Time.Format (parseTime, formatTime)
-import           System.Locale (defaultTimeLocale)
+import           Data.Time.Format (defaultTimeLocale, parseTime, formatTime)
 
 import qualified Data.Map as M
 import qualified Data.Traversable as T
