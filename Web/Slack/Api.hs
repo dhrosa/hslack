@@ -2,6 +2,7 @@ module Web.Slack.Api
        (
          Slack(..),
          runSlack,
+         request,
          module Web.Slack.Api.User,
          module Web.Slack.Api.Channel,
          module Web.Slack.Api.Message
