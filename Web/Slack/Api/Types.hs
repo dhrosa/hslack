@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-module Web.Slack.Types
+module Web.Slack.Api.Types
        (
          SlackError,
          parseStrippedPrefix,
@@ -19,7 +19,7 @@ module Web.Slack.Types
        )
        where
 
-import           Web.Slack.Prelude
+import           Web.Slack.Api.Prelude
 
 import           Data.Char (toLower)
 import           Data.List (stripPrefix)
