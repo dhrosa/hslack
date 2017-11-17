@@ -2,7 +2,8 @@ module Web.Slack.Api.Channel
        (
         Channel(..),
         channels,
-        channelFromName
+        channelFromName,
+        directChannelFromUserId
        )
        where
 
