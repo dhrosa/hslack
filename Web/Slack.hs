@@ -26,9 +26,11 @@ slackAuth tok = SlackState tok []
 
 -- |Internal setup. Currently it just fetches the list of users so that it can associated user ids with names
 slackInit :: Slack ()
-slackInit = do
-  currentUsers <- request' "users.list" :: Slack [User]
-  let
+slackInit = return ()
+--  currentUsers <- request' "users.list" :: Slack [User]
+-- Commented out the below to make it faster since we don't need user lists
+{-  let
     updateUsers state = state {_users = currentUsers}
   -- Update internal state
   modify updateUsers
+-}
