@@ -10,7 +10,8 @@ module Web.Slack.Api.Message
          channelHistoryAll,
          channelHistoryRecent,
          messagesByUser,
-         postMessage
+         postMessage,
+         postMessage_
        )
        where
 
@@ -60,7 +61,7 @@ data MessageRaw = MessageRaw {
 instance FromJSON MessageRaw where
   parseJSON = parseStrippedPrefix "_message"
 
-instance SlackResponseName [MessageRaw] where 
+instance SlackResponseName [MessageRaw] where
   slackResponseName _ = "messages"
 
 -- | A nicer version of MessageRaw, with the user id converted to a User
@@ -69,7 +70,7 @@ data Message = Message {
   messageUser :: Maybe User,
   messageText :: String,
   messageTimeStamp :: TimeStamp
-  } deriving (Show, Eq) 
+  } deriving (Show, Eq)
 
 -- | Converts a MessageRaw into a Message
 convertRawMessage :: MessageRaw -> Slack Message
@@ -77,7 +78,7 @@ convertRawMessage (MessageRaw mtype muid mtext mts) = do
   -- This converts a Maybe (Slack User) to a Slack (Maybe User)
   user <- T.sequence (userFromId <$> muid)
   return (Message mtype user mtext mts)
-   
+
 -- | List of the past n messages in the given channel
 -- n must be no greater than 1000
 channelHistory :: Int -> Channel -> Slack [Message]
@@ -127,8 +128,8 @@ channelHistoryRecent n chan = do
     -- Convert to NominalDiffTime
     nSecsAgo = fromInteger (- (toInteger n))
   mapM convertRawMessage =<< request "channels.history" args
-    
-                              
+
+
 -- | Retrieves the messages by the given user
 messagesByUser :: User -> [Message] -> [Message]
 messagesByUser user = filter (byUser . messageUser)
@@ -145,5 +146,15 @@ postMessage uname text chan = request "chat.postMessage" args
     args = M.fromList [
       ("channel", channelId chan),
       ("username", uname),
+      ("text", text)
+      ]
+
+-- | Posts a message as the default token user to the given channel.
+-- Returns the timestamp of the message, if successful
+postMessage_ :: String -> Channel -> Slack TimeStamp
+postMessage_ text chan = request "chat.postMessage" args
+  where
+    args = M.fromList [
+      ("channel", channelId chan),
       ("text", text)
       ]

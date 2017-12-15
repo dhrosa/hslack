@@ -23,7 +23,8 @@ module Web.Slack.Api.Types
 
 import           Web.Slack.Api.Prelude
 
-import           Data.ByteString.Lazy.Internal ( ByteString )
+import           Control.Applicative ( Alternative )
+import           Data.ByteString.Lazy ( ByteString )
 import           Data.Char (toLower)
 import           Data.List (stripPrefix)
 import qualified Data.Map as M
@@ -69,7 +70,7 @@ data SlackState = SlackState
 
 -- |The Slack monad. It executes commands with the context of possible failure (malformed requests, Slack is down, etc...), and some internal state
 newtype Slack a = Slack {runSlackInternal :: EitherT SlackError (StateT SlackState IO) a}
-                  deriving (Functor, Applicative, Monad, MonadIO, MonadState SlackState)
+                  deriving (Functor, Alternative, Applicative, Monad, MonadIO, MonadState SlackState)
 
 -- |Parses a record from a JSON object by stripping the given prefix off of each field
 parseStrippedPrefix prefix = genericParseJSON (defaultOptions {fieldLabelModifier = uncamel})
