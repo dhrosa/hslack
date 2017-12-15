@@ -49,9 +49,11 @@ cabal-version:       >=1.10
 library
   -- Modules exported by the library.
   exposed-modules:     Web.Slack.Api, Web.Slack.Api.User, Web.Slack.Api.Channel, Web.Slack.Api.Message
+  -- exposed by spc:
+                     , Web.Slack.Api.Types
 
   -- Modules included in this library but not exported.
-  other-modules:   Web.Slack.Api.Types, Web.Slack.Api.Prelude
+  other-modules:       Web.Slack.Api.Prelude
 
   -- LANGUAGE extensions used by modules in this package.
   default-extensions:    DeriveFunctor, DeriveGeneric, GeneralizedNewtypeDeriving, DisambiguateRecordFields, FlexibleInstances, OverloadedStrings, ScopedTypeVariables

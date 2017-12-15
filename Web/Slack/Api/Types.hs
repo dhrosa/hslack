@@ -14,6 +14,8 @@ module Web.Slack.Api.Types
          CommandArgs,
          request,
          request',
+         requestRaw,
+         requestRaw',
          User(..),
          users
        )
@@ -21,6 +23,7 @@ module Web.Slack.Api.Types
 
 import           Web.Slack.Api.Prelude
 
+import           Data.ByteString.Lazy.Internal ( ByteString )
 import           Data.Char (toLower)
 import           Data.List (stripPrefix)
 import qualified Data.Map as M
@@ -126,7 +129,7 @@ request command args = do
   -- Construct the proper API url
   url <- buildURL command args
   -- Retrieve the raw JSON Data
-  raw <- liftIO (simpleHttp url) 
+  raw <- liftIO (simpleHttp url)
   -- Parse it into a SlackResponse object
   resp <- Slack . hoistEither . eitherDecode $ raw
   -- Merge the Either inside the SlackResponse with the EitherT in the Slack monad stack
@@ -135,3 +138,12 @@ request command args = do
 -- |Same as request with no command arguments
 request' :: (SlackResponseName a, FromJSON a) => CommandName -> Slack a
 request' command = request command M.empty
+
+requestRaw :: CommandName -> CommandArgs -> Slack ByteString
+requestRaw command args = do
+  url <- buildURL command args
+  raw <- liftIO $ simpleHttp url
+  Slack .hoistEither $ Right raw
+
+requestRaw' :: CommandName -> Slack ByteString
+requestRaw' command = requestRaw command M.empty
