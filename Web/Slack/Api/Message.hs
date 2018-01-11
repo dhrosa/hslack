@@ -12,6 +12,7 @@ module Web.Slack.Api.Message
          postMessage,
          postMessage_,
          timeStampFromUtcTime,
+         timeStampToString
        )
        where
 
@@ -38,12 +39,15 @@ import           Web.Slack.Api.Types        ( Slack(..)
 import           Web.Slack.Api.User         ( User(..)
                                             , userFromId
                                             )
+import Data.Serialize (Serialize)
+import Data.Serialize.Text ()
+
 import qualified Data.Text as Text
 
 -- | Fixed point number with 12 decimal places of precision
 newtype TimeStamp = TimeStamp {
   slackTs :: Text
-  } deriving (Show, Eq, Ord)
+  } deriving (Show, Eq, Ord, Generic, Serialize)
 
 -- | Converts to utc time. we pretty much know it will work b/c fromJSON tries it first
 utcTime :: TimeStamp -> UTCTime
