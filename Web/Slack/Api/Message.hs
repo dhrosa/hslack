@@ -4,47 +4,72 @@ module Web.Slack.Api.Message
          MessageRaw(..),
          convertRawMessage,
          TimeStamp(..),
-         timeStampToString,
          channelHistory,
          channelHistoryBefore,
          channelHistoryAll,
          channelHistoryRecent,
          messagesByUser,
          postMessage,
-         postMessage_
+         postMessage_,
+         timeStampFromUtcTime,
+         timeStampToString
        )
        where
 
+import           Data.Aeson                    ( ToJSON( toJSON ) )
+import qualified Data.Map              as M
+import           Data.Maybe                    ( fromJust )
+import           Data.Serialize                ( Serialize )
+import           Data.Serialize.Text           ()
+import qualified Data.Text             as Text
+import           Data.Time.Clock               ( UTCTime
+                                               , addUTCTime
+                                               , getCurrentTime
+                                               )
+import           Data.Time.Clock.POSIX         ( utcTimeToPOSIXSeconds )
+import           Data.Time.Format              ( defaultTimeLocale
+                                               , formatTime
+                                               , parseTime
+                                               )
+import qualified Data.Traversable      as T
+import           Web.Slack.Api.Channel         ( Channel(..) )
 import           Web.Slack.Api.Prelude
-
-import           Web.Slack.Api.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request)
-
-import           Web.Slack.Api.Channel (Channel(..))
-import           Web.Slack.Api.User (User(..), userFromId)
-
-import           Data.Time.Clock (UTCTime, getCurrentTime, addUTCTime)
-import           Data.Time.Format (defaultTimeLocale, parseTime, formatTime)
-
-import qualified Data.Map as M
-import qualified Data.Traversable as T
+import           Web.Slack.Api.Types           ( Slack(..)
+                                               , SlackResponseName(..)
+                                               , parseStrippedPrefix
+                                               , request
+                                               )
+import           Web.Slack.Api.User            ( User(..)
+                                               , userFromId
+                                               )
 
 -- | Fixed point number with 12 decimal places of precision
 newtype TimeStamp = TimeStamp {
-  utcTime :: UTCTime
-  } deriving (Show, Eq, Ord)
+  slackTs :: Text
+  } deriving (Show, Eq, Ord, Generic, Serialize)
+
+-- | Converts to utc time. we pretty much know it will work b/c fromJSON tries it first
+utcTime :: TimeStamp -> UTCTime
+utcTime = fromJust . parseTime defaultTimeLocale "%s%Q" . unpack . slackTs
+
+timeStampFromUtcTime :: UTCTime -> TimeStamp
+timeStampFromUtcTime = TimeStamp . Text.pack . formatTime defaultTimeLocale "%s%Q"
 
 -- | Converts a TimeStamp to the timestamp format the Slack API expects
 timeStampToString :: TimeStamp -> String
-timeStampToString = formatTime defaultTimeLocale "%s%Q" . utcTime
+timeStampToString = Text.unpack . slackTs
 
 instance FromJSON TimeStamp where
   parseJSON (String s) = do
     let maybeTime = parseTime defaultTimeLocale "%s%Q" (unpack s):: Maybe UTCTime
     case maybeTime of
      Nothing     -> fail "Incorrect timestamp format."
-     Just (time) -> return (TimeStamp time)
+     Just _ -> return (TimeStamp s)
 
   parseJSON _ = fail "Expected a timestamp string"
+
+instance ToJSON TimeStamp where
+  toJSON (TimeStamp s) = toJSON s
 
 instance SlackResponseName TimeStamp where
   slackResponseName _ = "ts"
@@ -96,8 +121,9 @@ channelHistoryBefore n ts chan = mapM convertRawMessage =<< request "channels.hi
     args = M.fromList [
       ("channel", channelId chan),
       ("count", show n),
-      ("latest", timeStampToString ts)
+      ("latest", Text.unpack $ slackTs ts)
       ]
+
 -- | Retrieves the entire channel history
 channelHistoryAll :: Channel -> Slack [Message]
 channelHistoryAll chan = do
@@ -123,7 +149,7 @@ channelHistoryRecent n chan = do
     args = M.fromList [
       ("channel", channelId chan),
       ("count", "1000"),
-      ("oldest", timeStampToString . TimeStamp $ addUTCTime nSecsAgo now)
+      ("oldest", timeStampToString . timeStampFromUtcTime $ addUTCTime nSecsAgo now)
       ]
     -- Convert to NominalDiffTime
     nSecsAgo = fromInteger (- (toInteger n))

@@ -62,6 +62,8 @@ library
   build-depends:       aeson
                      , base
                      , bytestring
+                     , cereal
+                     , cereal-text
                      , containers
                      , either
                      , http-conduit
