@@ -1,17 +1,18 @@
-module Web.Slack
+module Web.Slack.Api
        (
          Slack(..),
          runSlack,
-         module Web.Slack.User,
-         module Web.Slack.Channel,
-         module Web.Slack.Message
+         request,
+         module Web.Slack.Api.User,
+         module Web.Slack.Api.Channel,
+         module Web.Slack.Api.Message
        )
        where
 
-import Web.Slack.Channel
-import Web.Slack.Message
-import Web.Slack.Types
-import Web.Slack.User
+import Web.Slack.Api.Channel
+import Web.Slack.Api.Message
+import Web.Slack.Api.Types
+import Web.Slack.Api.User
 
 import Control.Monad.State (evalStateT, modify)
 import Control.Monad.Trans.Either (runEitherT)
@@ -26,9 +27,11 @@ slackAuth tok = SlackState tok []
 
 -- |Internal setup. Currently it just fetches the list of users so that it can associated user ids with names
 slackInit :: Slack ()
-slackInit = do
-  currentUsers <- request' "users.list" :: Slack [User]
-  let
+slackInit = return ()
+--  currentUsers <- request' "users.list" :: Slack [User]
+-- Commented out the below to make it faster since we don't need user lists
+{-  let
     updateUsers state = state {_users = currentUsers}
   -- Update internal state
   modify updateUsers
+-}

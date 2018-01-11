@@ -1,17 +1,18 @@
-module Web.Slack.Channel
+module Web.Slack.Api.Channel
        (
         Channel(..),
         channels,
-        channelFromName
+        channelFromName,
+        directChannelFromUserId
        )
        where
 
-import Web.Slack.Prelude
+import Web.Slack.Api.Prelude
 
-import Web.Slack.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request')
+import Web.Slack.Api.Types (SlackResponseName(..), parseStrippedPrefix, Slack(..), request', request)
 
-import Web.Slack.User (User(..), userFromId)
-
+import Web.Slack.Api.User (User(..), userFromId)
+import qualified Data.Map as M
 import Data.List (find)
 
 -- | Represents a response from the "channels.list" command. This
@@ -53,3 +54,25 @@ channelFromName cname = do
   case maybeChannel of
    Nothing   -> Slack . hoistEither . Left . printf "Could not find channel with name: %s" $ cname
    Just channel -> Slack . hoistEither $ Right channel
+
+-- | Represents a response from the "im.open" command.
+-- which is just the channel id. This should be
+-- converted to a DirectChannel object
+data DirectChannelRaw = DirectChannelRaw {
+  _directChannelId :: String
+  } deriving (Show, Generic)
+
+instance FromJSON DirectChannelRaw where
+  parseJSON = parseStrippedPrefix "_directChannel"
+
+instance SlackResponseName DirectChannelRaw where
+  slackResponseName _ = "channel"
+
+directChannelFromUserId :: String -> Slack Channel
+directChannelFromUserId u = convertRawDirectChannel =<< request "im.open" args
+  where
+    args = M.fromList [("user", u)]
+
+    convertRawDirectChannel :: DirectChannelRaw -> Slack Channel
+    convertRawDirectChannel (DirectChannelRaw cid) =
+      return $ Channel cid "" []

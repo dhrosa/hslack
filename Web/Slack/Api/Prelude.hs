@@ -1,4 +1,4 @@
-module Web.Slack.Prelude
+module Web.Slack.Api.Prelude
        (
          (<$>),
          (<*>),
