@@ -16,33 +16,32 @@ module Web.Slack.Api.Message
        )
        where
 
-import           Data.Aeson                 ( ToJSON( toJSON ) )
+import           Data.Aeson                    ( ToJSON( toJSON ) )
 import qualified Data.Map              as M
-import           Data.Time.Clock            ( UTCTime
-                                            , addUTCTime
-                                            , getCurrentTime
-                                            )
-import           Data.Time.Clock.POSIX      ( utcTimeToPOSIXSeconds )
-import           Data.Time.Format           ( defaultTimeLocale
-                                            , formatTime
-                                            , parseTime
-                                            )
-import Data.Maybe (fromJust)
+import           Data.Maybe                    ( fromJust )
+import           Data.Serialize                ( Serialize )
+import           Data.Serialize.Text           ()
+import qualified Data.Text             as Text
+import           Data.Time.Clock               ( UTCTime
+                                               , addUTCTime
+                                               , getCurrentTime
+                                               )
+import           Data.Time.Clock.POSIX         ( utcTimeToPOSIXSeconds )
+import           Data.Time.Format              ( defaultTimeLocale
+                                               , formatTime
+                                               , parseTime
+                                               )
 import qualified Data.Traversable      as T
-import           Web.Slack.Api.Channel      ( Channel(..) )
+import           Web.Slack.Api.Channel         ( Channel(..) )
 import           Web.Slack.Api.Prelude
-import           Web.Slack.Api.Types        ( Slack(..)
-                                            , SlackResponseName(..)
-                                            , parseStrippedPrefix
-                                            , request
-                                            )
-import           Web.Slack.Api.User         ( User(..)
-                                            , userFromId
-                                            )
-import Data.Serialize (Serialize)
-import Data.Serialize.Text ()
-
-import qualified Data.Text as Text
+import           Web.Slack.Api.Types           ( Slack(..)
+                                               , SlackResponseName(..)
+                                               , parseStrippedPrefix
+                                               , request
+                                               )
+import           Web.Slack.Api.User            ( User(..)
+                                               , userFromId
+                                               )
 
 -- | Fixed point number with 12 decimal places of precision
 newtype TimeStamp = TimeStamp {
