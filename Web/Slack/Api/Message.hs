@@ -12,7 +12,8 @@ module Web.Slack.Api.Message
          postMessage,
          postMessage_,
          timeStampFromUtcTime,
-         timeStampToString
+         timeStampToString,
+         utcTime
        )
        where
 
